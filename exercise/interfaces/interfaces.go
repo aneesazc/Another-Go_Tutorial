@@ -17,10 +17,40 @@
 //--Notes:
 //* Use any names for vehicle models
 
+// Code here:
 package main
 
 import "fmt"
 
-func main() {
+type Vehicle struct {
+	Type  string
+	Model string
+}
 
+type LiftVehicle interface {
+	vehicleLift()
+}
+
+func (v Vehicle) vehicleLift() {
+	switch v.Type {
+	case "Motorcycle":
+		fmt.Printf("Motorcycle %s is on a small lift\n", v.Model)
+	case "Car":
+		fmt.Printf("Car %s is on a standard lift\n", v.Model)
+	case "Truck":
+		fmt.Printf("Truck %s is on a large lift\n", v.Model)
+	}
+}
+
+func main() {
+	motorcycle := Vehicle{Type: "Motorcycle", Model: "Harley"}
+	car := Vehicle{Type: "Car", Model: "Corolla"}
+	truck := Vehicle{Type: "Truck", Model: "F150"}
+
+	vehicles := []LiftVehicle{motorcycle, car, truck}
+	fmt.Println("Vehicles at the shop:", vehicles)
+
+	for _, vehicle := range vehicles {
+		vehicle.vehicleLift()
+	}
 }
