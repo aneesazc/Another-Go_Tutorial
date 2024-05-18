@@ -12,6 +12,8 @@
 //* Sum the results from each job to generate a final result, and print it
 //  to the terminal
 
+// ******
+
 package main
 
 import (
@@ -37,7 +39,85 @@ func makeJobs() []Job {
 	return jobs
 }
 
+func runJob(resultChan chan int, j Job) {
+	resultChan <- longCalculation(j)
+}
+
 func main() {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	jobs := makeJobs()
+	resultChan := make(chan int, 10)
+	for _, job := range jobs {
+		go runJob(resultChan, job)
+	}
+
+	sum := 0
+	resultCount := 0
+	for {
+		result := <-resultChan
+		sum += result
+		resultCount += 1
+		if resultCount == len(jobs) {
+			break
+		}
+	}
+
+	fmt.Println("Sum:", sum)
+
 }
+
+// package main
+
+// import (
+// 	"fmt"
+// 	"math/rand"
+// 	"sync"
+// 	"time"
+// )
+
+// type Job int
+
+// func longCalculation(i Job) int {
+// 	duration := time.Duration(rand.Intn(1000)) * time.Millisecond
+// 	time.Sleep(duration)
+// 	fmt.Printf("Job %d complete in %v\n", i, duration)
+// 	return int(i) * 30
+// }
+
+// func makeJobs() []Job {
+// 	jobs := make([]Job, 0, 100)
+// 	for i := 0; i < 100; i++ {
+// 		jobs = append(jobs, Job(rand.Intn(10000)))
+// 	}
+// 	return jobs
+// }
+
+// func runJob(wg *sync.WaitGroup, resultChan chan int, j Job) {
+// 	defer wg.Done()
+// 	resultChan <- longCalculation(j)
+// }
+
+// func main() {
+// 	rand.Seed(time.Now().UnixNano())
+// 	jobs := makeJobs()
+// 	resultChan := make(chan int, 10)
+// 	var wg sync.WaitGroup
+
+// 	for _, job := range jobs {
+// 		wg.Add(1)
+// 		go runJob(&wg, resultChan, job)
+// 	}
+
+// 	// Close the result channel once all goroutines have finished
+// 	go func() {
+// 		wg.Wait()
+// 		close(resultChan)
+// 	}()
+
+// 	sum := 0
+// 	for result := range resultChan {
+// 		sum += result
+// 	}
+
+// 	fmt.Println("Sum:", sum)
+// }
